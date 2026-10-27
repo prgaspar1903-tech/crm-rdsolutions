@@ -1,0 +1,1271 @@
+<title>CRM do Estúdio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: barra superior com abas; cada aba é uma visão (painel, hoje, kanban, leads, cadência); ficha do lead em gaveta lateral */
+:root {
+  --bg: #f2f2ef;
+  --surface: #fcfcfb;
+  --surface-2: #f5f5f2;
+  --line: #e4e3de;
+  --line-strong: #cfcdc6;
+  --fg: #0b0b0b;
+  --fg-2: #52514e;
+  --fg-3: #77766f;
+  --accent: #2a78d6;
+  --accent-ink: #1c5cab;
+  --accent-soft: #e4eefb;
+  --on-accent: #ffffff;
+  --series: #2a78d6;
+  --track: #ecebe7;
+  --good: #0ca30c;
+  --good-ink: #006300;
+  --warn: #fab219;
+  --warn-ink: #8a5a00;
+  --bad: #d03b3b;
+  --bad-ink: #b02a2a;
+  --bad-soft: #fbe9e8;
+  --scrim: rgb(20 20 18 / 0.32);
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.05), 0 6px 20px rgb(0 0 0 / 0.06);
+  --shadow-lift: 0 10px 30px rgb(0 0 0 / 0.18);
+  --font: "Instrument Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --r: 10px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #121211; --surface: #1a1a19; --surface-2: #222220; --line: #2e2e2b; --line-strong: #44443f;
+    --fg: #ffffff; --fg-2: #c3c2b7; --fg-3: #94938b;
+    --accent: #3987e5; --accent-ink: #86b6ef; --accent-soft: #1a2a3f; --on-accent: #ffffff;
+    --series: #3987e5; --track: #2a2a27;
+    --good: #0ca30c; --good-ink: #5fd35f; --warn: #fab219; --warn-ink: #fab219; --bad: #d03b3b; --bad-ink: #f08080; --bad-soft: #3a1d1c;
+    --scrim: rgb(0 0 0 / 0.55);
+    --shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 6px 20px rgb(0 0 0 / 0.3);
+    --shadow-lift: 0 10px 30px rgb(0 0 0 / 0.6);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #121211; --surface: #1a1a19; --surface-2: #222220; --line: #2e2e2b; --line-strong: #44443f;
+  --fg: #ffffff; --fg-2: #c3c2b7; --fg-3: #94938b;
+  --accent: #3987e5; --accent-ink: #86b6ef; --accent-soft: #1a2a3f; --on-accent: #ffffff;
+  --series: #3987e5; --track: #2a2a27;
+  --good: #0ca30c; --good-ink: #5fd35f; --warn: #fab219; --warn-ink: #fab219; --bad: #d03b3b; --bad-ink: #f08080; --bad-soft: #3a1d1c;
+  --scrim: rgb(0 0 0 / 0.55);
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 6px 20px rgb(0 0 0 / 0.3);
+  --shadow-lift: 0 10px 30px rgb(0 0 0 / 0.6);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font-family: var(--font); font-size: 14px; line-height: 1.5; }
+button, input, select, textarea { font: inherit; color: inherit; }
+a { color: var(--accent-ink); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.num { font-variant-numeric: tabular-nums; }
+.muted { color: var(--fg-2); }
+.faint { color: var(--fg-3); }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* ---------- Barra superior ---------- */
+.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 30; background: var(--surface); border-bottom: 1px solid var(--line); }
+.top-in { max-width: 1320px; margin: 0 auto; padding-inline: 16px; display: flex; align-items: center; gap: 16px; min-height: 60px; }
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 15px; white-space: nowrap; }
+.brand-mark { width: 28px; height: 28px; border-radius: 8px; background: var(--fg); color: var(--surface); display: grid; place-items: center; font-size: 13px; font-weight: 700; letter-spacing: -0.02em; }
+.brand small { display: block; font-weight: 500; font-size: 12px; color: var(--fg-3); line-height: 1.2; }
+.tabs { display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; flex: 1; min-width: 0; }
+.tabs::-webkit-scrollbar { display: none; }
+.tab { all: unset; cursor: pointer; padding: 8px 12px; border-radius: 8px; color: var(--fg-2); font-weight: 500; white-space: nowrap; display: inline-flex; align-items: center; gap: 6px; }
+.tab:hover { background: var(--surface-2); color: var(--fg); }
+.tab:focus-visible { outline: 2px solid var(--accent); }
+.tab[aria-selected="true"] { background: var(--accent-soft); color: var(--accent-ink); }
+.badge { min-width: 20px; height: 20px; padding: 0 6px; border-radius: 999px; background: var(--bad); color: #fff; font-size: 12px; font-weight: 600; display: inline-grid; place-items: center; }
+.badge[data-zero] { background: var(--line-strong); color: var(--fg-2); }
+.sync { font-size: 12px; color: var(--fg-3); white-space: nowrap; display: inline-flex; align-items: center; gap: 6px; }
+.sync::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--line-strong); }
+.sync[data-live]::before { background: var(--good); }
+@media (max-width: 860px) { .top-in { flex-wrap: wrap; padding-block: 8px; gap: 8px 12px; } .tabs { order: 3; flex-basis: 100%; } .sync { display: none; } }
+
+/* ---------- Botões ---------- */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 36px; padding: 0 14px; border-radius: 8px; border: 1px solid var(--line-strong); background: var(--surface); color: var(--fg); font-weight: 600; cursor: pointer; white-space: nowrap; text-decoration: none; }
+.btn:hover { border-color: var(--fg-3); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.btn.primary:hover { filter: brightness(1.08); }
+.btn.ghost { border-color: transparent; background: transparent; color: var(--fg-2); }
+.btn.ghost:hover { background: var(--surface-2); color: var(--fg); }
+.btn.danger { color: var(--bad-ink); border-color: var(--line-strong); }
+.btn.danger[data-confirm] { background: var(--bad); border-color: var(--bad); color: #fff; }
+.btn.sm { min-height: 30px; padding: 0 10px; font-size: 13px; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn svg { width: 16px; height: 16px; flex: none; }
+
+/* ---------- Estrutura das visões ---------- */
+main { max-width: 1320px; margin: 0 auto; padding-inline: 16px; padding-block: 24px 80px; }
+.view { display: grid; gap: 20px; }
+.view-head { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px; }
+.view-head h1 { font-size: 22px; line-height: 1.2; margin: 0; letter-spacing: -0.015em; text-wrap: balance; }
+.view-head p { margin: 4px 0 0; color: var(--fg-2); max-width: 70ch; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); }
+.card-h { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 16px 18px 0; }
+.card-h h2 { margin: 0; font-size: 14px; font-weight: 600; }
+.card-h .faint { font-size: 12px; }
+.card-b { padding: 14px 18px 18px; }
+.banner { padding: 12px 16px; border-radius: var(--r); background: var(--bad-soft); color: var(--bad-ink); font-weight: 500; }
+
+/* ---------- Painel (dashboard) ---------- */
+.dash-top { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 2fr); gap: 16px; }
+@media (max-width: 960px) { .dash-top { grid-template-columns: minmax(0, 1fr); } }
+.hero { padding: 20px 22px; display: grid; gap: 14px; align-content: start; }
+.hero-label { font-size: 13px; color: var(--fg-2); font-weight: 500; }
+.hero-value { font-size: 52px; line-height: 1; font-weight: 600; letter-spacing: -0.03em; }
+.meter { height: 8px; border-radius: 999px; background: var(--track); overflow: hidden; }
+.meter > span { display: block; height: 100%; border-radius: 999px; background: var(--series); transition: width 0.4s ease; }
+.meter[data-done] > span { background: var(--good); }
+.hero-sub { display: flex; justify-content: space-between; gap: 8px; font-size: 13px; color: var(--fg-2); flex-wrap: wrap; }
+.hero-goals { display: grid; gap: 10px; border-top: 1px solid var(--line); padding-top: 14px; }
+.goal-row { display: grid; gap: 6px; }
+.goal-row .hero-sub { font-size: 12px; }
+.goal-form { display: flex; flex-wrap: wrap; gap: 8px; align-items: end; }
+.goal-form label { display: grid; gap: 4px; font-size: 12px; color: var(--fg-2); }
+.goal-form input { width: 130px; }
+
+.tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; }
+@media (max-width: 1100px) { .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.tile { padding: 16px 18px; display: grid; gap: 4px; align-content: start; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); min-width: 0; }
+.tiles .tile:nth-child(4n) { border-right: 0; }
+.tiles .tile:nth-last-child(-n+4) { border-bottom: 0; }
+@media (max-width: 1100px) {
+  .tiles .tile:nth-child(4n) { border-right: 1px solid var(--line); }
+  .tiles .tile:nth-child(2n) { border-right: 0; }
+  .tiles .tile:nth-last-child(-n+4) { border-bottom: 1px solid var(--line); }
+  .tiles .tile:nth-last-child(-n+2) { border-bottom: 0; }
+}
+.tile-label { font-size: 12px; color: var(--fg-2); font-weight: 500; }
+.tile-value { font-size: 24px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.2; }
+.tile-sub { font-size: 12px; color: var(--fg-3); }
+.tile[data-alert] .tile-value { color: var(--bad-ink); }
+
+.charts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+@media (max-width: 960px) { .charts { grid-template-columns: minmax(0, 1fr); } }
+
+/* Barras horizontais */
+.hbars { display: grid; gap: 10px; }
+.hbar { display: grid; grid-template-columns: 112px minmax(0, 1fr) 64px; align-items: center; gap: 10px; }
+.hbar-label { font-size: 13px; color: var(--fg-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hbar-track { position: relative; height: 22px; }
+.hbar-track::before { content: ""; position: absolute; inset: 0; border-left: 1px solid var(--line-strong); }
+.hbar-fill { position: absolute; left: 0; top: 0; bottom: 0; background: var(--series); border-radius: 0 4px 4px 0; min-width: 2px; }
+.hbar-hit { position: absolute; inset: -4px 0; cursor: default; }
+.hbar-val { font-size: 13px; font-weight: 600; text-align: right; }
+.hbar-val small { display: block; font-weight: 500; font-size: 11px; color: var(--fg-3); }
+.step-conv { font-size: 11px; color: var(--fg-3); padding-left: 122px; margin: -6px 0 -4px; }
+
+/* Colunas */
+.cols { display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 8px; }
+.cols-axis { display: grid; align-content: space-between; height: 180px; font-size: 11px; color: var(--fg-3); text-align: right; }
+.cols-plot { position: relative; height: 180px; display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); align-items: end; border-bottom: 1px solid var(--line-strong); }
+.cols-grid { position: absolute; inset: 0; display: grid; align-content: space-between; pointer-events: none; }
+.cols-grid span { border-top: 1px solid var(--line); }
+.col-bar { position: relative; height: 100%; display: flex; align-items: end; justify-content: center; }
+.col-bar i { display: block; width: min(24px, 60%); background: var(--series); border-radius: 4px 4px 0 0; min-height: 0; }
+.col-bar b { position: absolute; font-size: 11px; font-weight: 600; transform: translateY(-18px); white-space: nowrap; }
+.cols-x { grid-column: 2; display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); font-size: 11px; color: var(--fg-3); text-align: center; }
+
+.chart-empty { padding: 28px 0 10px; color: var(--fg-3); font-size: 13px; }
+details.table-view { margin-top: 12px; font-size: 12px; }
+details.table-view summary { cursor: pointer; color: var(--fg-3); }
+details.table-view table { margin-top: 8px; border-collapse: collapse; width: 100%; }
+details.table-view td, details.table-view th { padding: 4px 8px; border-bottom: 1px solid var(--line); text-align: left; }
+details.table-view td:not(:first-child), details.table-view th:not(:first-child) { text-align: right; }
+
+.tip { position: fixed; z-index: 80; pointer-events: none; background: var(--fg); color: var(--surface); font-size: 12px; padding: 8px 10px; border-radius: 8px; box-shadow: var(--shadow); max-width: 240px; line-height: 1.4; }
+
+/* ---------- Pílulas, cadência ---------- */
+.pill { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; padding: 2px 9px 2px 7px; border-radius: 999px; background: var(--surface-2); color: var(--fg-2); border: 1px solid var(--line); white-space: nowrap; }
+.pill::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--dot, var(--fg-3)); }
+.pill[data-tone="accent"] { --dot: var(--accent); }
+.pill[data-tone="good"] { --dot: var(--good); }
+.pill[data-tone="warn"] { --dot: var(--warn); }
+.pill[data-tone="bad"] { --dot: var(--bad); }
+.score { font-weight: 700; font-size: 12px; padding: 1px 7px; border-radius: 6px; background: var(--surface-2); border: 1px solid var(--line); }
+.score[data-hi] { background: var(--accent-soft); border-color: transparent; color: var(--accent-ink); }
+.dots { display: inline-flex; gap: 3px; vertical-align: middle; }
+.dots i { width: 14px; height: 5px; border-radius: 3px; background: var(--track); }
+.dots i[data-done] { background: var(--series); }
+.dots i[data-next] { background: var(--series); opacity: 0.35; }
+.due { font-size: 12px; color: var(--fg-2); display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+.due svg { width: 13px; height: 13px; }
+.due[data-late] { color: var(--bad-ink); font-weight: 600; }
+.due[data-today] { color: var(--warn-ink); font-weight: 600; }
+
+/* ---------- Hoje ---------- */
+.today-cols { display: grid; gap: 20px; }
+.section-title { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: var(--fg-2); text-transform: uppercase; letter-spacing: 0.06em; margin: 0 0 10px; }
+.task-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 380px), 1fr)); gap: 12px; }
+.task { padding: 16px; display: grid; gap: 10px; align-content: start; }
+.task-h { display: flex; justify-content: space-between; gap: 10px; align-items: start; }
+.task-h h3 { margin: 0; font-size: 15px; }
+.task-h .faint { font-size: 12px; }
+.step-tag { font-size: 12px; font-weight: 600; color: var(--accent-ink); background: var(--accent-soft); padding: 2px 8px; border-radius: 6px; white-space: nowrap; }
+.msg { width: 100%; min-height: 120px; resize: vertical; border: 1px solid var(--line); background: var(--surface-2); border-radius: 8px; padding: 10px 12px; line-height: 1.5; }
+.msg:focus { outline: 2px solid var(--accent); outline-offset: -1px; background: var(--surface); }
+.task-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+.missing { font-size: 12px; color: var(--warn-ink); }
+.empty { padding: 36px 24px; display: grid; gap: 10px; justify-items: start; }
+.empty h2 { margin: 0; font-size: 17px; }
+.empty p { margin: 0; color: var(--fg-2); max-width: 62ch; }
+
+/* ---------- Kanban ---------- */
+.seg { display: inline-flex; padding: 3px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 10px; gap: 2px; }
+.seg button { all: unset; cursor: pointer; padding: 6px 12px; border-radius: 7px; font-weight: 600; font-size: 13px; color: var(--fg-2); }
+.seg button[aria-pressed="true"] { background: var(--surface); color: var(--fg); box-shadow: var(--shadow); }
+.seg button:focus-visible { outline: 2px solid var(--accent); }
+.board { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(260px, 1fr); gap: 12px; overflow-x: auto; padding-bottom: 8px; align-items: start; }
+.col { background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--r); display: grid; grid-template-rows: auto 1fr; min-height: 420px; transition: background 0.15s, border-color 0.15s; }
+.col[data-over] { background: var(--accent-soft); border-color: var(--accent); }
+.col-h { padding: 12px 12px 8px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.col-h strong { font-size: 13px; display: inline-flex; align-items: center; gap: 7px; }
+.col-h strong::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--dot, var(--fg-3)); }
+.col-h .faint { font-size: 12px; }
+.col-body { padding: 4px 8px 10px; display: grid; gap: 8px; align-content: start; }
+.col-empty { border: 1px dashed var(--line-strong); border-radius: 8px; padding: 14px; text-align: center; color: var(--fg-3); font-size: 12px; }
+.kcard { background: var(--surface); border: 1px solid var(--line); border-radius: 9px; padding: 10px 10px 10px 12px; display: grid; gap: 6px; cursor: grab; user-select: none; position: relative; }
+.kcard:hover { border-color: var(--line-strong); box-shadow: var(--shadow); }
+.kcard:focus-visible { outline: 2px solid var(--accent); }
+.kcard[data-placeholder] { opacity: 0.35; }
+.kcard.ghost { position: fixed; z-index: 90; pointer-events: none; box-shadow: var(--shadow-lift); transform: rotate(1.5deg); cursor: grabbing; }
+body[data-dragging] { cursor: grabbing; }
+body[data-dragging] * { cursor: grabbing !important; }
+.kcard-top { display: flex; justify-content: space-between; gap: 8px; align-items: start; }
+.kcard-name { font-weight: 600; font-size: 14px; line-height: 1.3; overflow-wrap: anywhere; }
+.kcard-meta { font-size: 12px; color: var(--fg-3); overflow-wrap: anywhere; }
+.kcard-foot { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+.grip { all: unset; cursor: grab; touch-action: none; color: var(--fg-3); display: grid; place-items: center; width: 26px; height: 26px; margin: -4px -4px 0 0; border-radius: 6px; flex: none; }
+.grip:hover { background: var(--surface-2); color: var(--fg); }
+.grip svg { width: 16px; height: 16px; }
+.money { font-weight: 600; font-size: 13px; }
+
+/* ---------- Lista ---------- */
+.filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.field { border: 1px solid var(--line-strong); background: var(--surface); border-radius: 8px; padding: 0 10px; min-height: 36px; }
+.field:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+.filters .field[type="search"] { flex: 1 1 240px; min-width: 0; }
+.table-box { overflow-x: auto; }
+table.leads { width: 100%; border-collapse: collapse; min-width: 900px; }
+table.leads th { text-align: left; font-size: 12px; font-weight: 600; color: var(--fg-3); padding: 10px 14px; border-bottom: 1px solid var(--line); white-space: nowrap; cursor: pointer; user-select: none; }
+table.leads th[aria-sort] { color: var(--fg); }
+table.leads td { padding: 12px 14px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+table.leads tbody tr { cursor: pointer; }
+table.leads tbody tr:hover { background: var(--surface-2); }
+table.leads tbody tr:last-child td { border-bottom: 0; }
+.cell-name { font-weight: 600; }
+.cell-sub { font-size: 12px; color: var(--fg-3); }
+
+/* ---------- Cadência ---------- */
+.cad-grid { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 16px; align-items: start; }
+@media (max-width: 1000px) { .cad-grid { grid-template-columns: minmax(0, 1fr); } }
+.timeline { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0; padding: 18px; }
+@media (max-width: 640px) { .timeline { grid-template-columns: minmax(0, 1fr); gap: 10px; } }
+.tl-step { display: grid; gap: 6px; position: relative; padding-right: 12px; }
+.tl-step::before { content: ""; height: 4px; border-radius: 2px; background: var(--series); opacity: calc(0.35 + var(--i) * 0.16); }
+.tl-day { font-size: 12px; color: var(--fg-3); font-weight: 600; }
+.tl-name { font-weight: 600; font-size: 13px; }
+.tl-count { font-size: 12px; color: var(--fg-2); }
+.steps { display: grid; gap: 12px; }
+.step { padding: 16px; display: grid; gap: 12px; }
+.step-row { display: grid; grid-template-columns: minmax(0, 1fr) 110px minmax(0, 180px); gap: 10px; }
+@media (max-width: 640px) { .step-row { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } .step-row label:first-child { grid-column: 1 / -1; } }
+label.f { display: grid; gap: 4px; font-size: 12px; color: var(--fg-2); font-weight: 500; min-width: 0; }
+label.f input, label.f select, label.f textarea { border: 1px solid var(--line-strong); background: var(--surface); border-radius: 8px; padding: 7px 10px; min-height: 36px; width: 100%; min-width: 0; }
+label.f textarea { min-height: 110px; resize: vertical; line-height: 1.5; }
+label.f input:focus, label.f select:focus, label.f textarea:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+.vars { display: flex; flex-wrap: wrap; gap: 6px; }
+.var { all: unset; cursor: pointer; font-size: 12px; font-family: ui-monospace, Menlo, monospace; padding: 2px 8px; border-radius: 6px; background: var(--surface-2); border: 1px solid var(--line); color: var(--fg-2); }
+.var:hover { border-color: var(--accent); color: var(--accent-ink); }
+.var:focus-visible { outline: 2px solid var(--accent); }
+.preview { white-space: pre-wrap; background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; font-size: 13px; color: var(--fg-2); }
+.side-note { padding: 16px 18px; display: grid; gap: 10px; font-size: 13px; color: var(--fg-2); position: sticky; top: 80px; }
+.side-note h2 { margin: 0; font-size: 14px; color: var(--fg); }
+.side-note ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
+.save-bar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+
+/* ---------- Gaveta do lead ---------- */
+.scrim { position: fixed; inset: 0; background: var(--scrim); z-index: 60; }
+.drawer { position: fixed; z-index: 70; top: 0; right: 0; bottom: 0; width: min(560px, 100%); background: var(--surface); border-left: 1px solid var(--line); box-shadow: var(--shadow-lift); display: grid; grid-template-rows: auto 1fr auto; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+.drawer-h { padding: 16px 18px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; gap: 12px; align-items: start; }
+.drawer-h h2 { margin: 0; font-size: 18px; letter-spacing: -0.01em; overflow-wrap: anywhere; }
+.drawer-b { overflow-y: auto; padding: 16px 18px 24px; display: grid; gap: 20px; align-content: start; }
+.drawer-f { padding: 12px 18px; border-top: 1px solid var(--line); display: flex; gap: 8px; justify-content: space-between; flex-wrap: wrap; }
+.dsec { display: grid; gap: 10px; }
+.dsec h3 { margin: 0; font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--fg-3); font-weight: 600; }
+.fgrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.fgrid .full { grid-column: 1 / -1; }
+@media (max-width: 480px) { .fgrid { grid-template-columns: minmax(0, 1fr); } }
+.checks { display: flex; flex-wrap: wrap; gap: 14px; }
+.checks label { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+.checks input { width: 16px; height: 16px; accent-color: var(--accent); }
+.cad-steps { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
+.cad-step { border: 1px solid var(--line); border-radius: 8px; padding: 8px; display: grid; gap: 2px; font-size: 12px; min-width: 0; }
+.cad-step b { font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cad-step span { color: var(--fg-3); }
+.cad-step[data-state="done"] { background: var(--accent-soft); border-color: transparent; }
+.cad-step[data-state="done"] span { color: var(--accent-ink); }
+.cad-step[data-state="next"] { border-color: var(--accent); }
+.history { display: grid; gap: 0; margin: 0; padding: 0; list-style: none; }
+.history li { display: grid; grid-template-columns: 74px minmax(0, 1fr); gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--line); font-size: 13px; }
+.history li:last-child { border-bottom: 0; }
+.history time { color: var(--fg-3); font-size: 12px; }
+
+.toast { position: fixed; z-index: 95; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--fg); color: var(--surface); padding: 10px 16px; border-radius: 10px; font-weight: 500; box-shadow: var(--shadow-lift); max-width: calc(100% - 32px); }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+
+<header class="top">
+  <div class="top-in">
+    <div class="brand"><span class="brand-mark" aria-hidden="true">ES</span><span>CRM do Estúdio<small>Leads e clientes</small></span></div>
+    <nav class="tabs" role="tablist" aria-label="Seções">
+      <button class="tab" role="tab" data-view="painel" id="tab-painel">Painel</button>
+      <button class="tab" role="tab" data-view="hoje" id="tab-hoje">Hoje <span class="badge" id="badge-hoje" data-zero>0</span></button>
+      <button class="tab" role="tab" data-view="kanban" id="tab-kanban">Kanban</button>
+      <button class="tab" role="tab" data-view="leads" id="tab-leads">Leads</button>
+      <button class="tab" role="tab" data-view="cadencia" id="tab-cadencia">Cadência</button>
+    </nav>
+    <span class="sync" id="sync">Conectando…</span>
+    <button class="btn primary" id="btn-new" type="button"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 3v10M3 8h10"/></svg>Novo lead</button>
+  </div>
+</header>
+
+<main>
+  <p class="banner" id="db-banner" hidden>Não foi possível conectar ao banco de dados. Confira a configuração do CRM (crm/config.js) ou recarregue a página.</p>
+  <section class="view" id="view-painel" hidden></section>
+  <section class="view" id="view-hoje" hidden></section>
+  <section class="view" id="view-kanban" hidden></section>
+  <section class="view" id="view-leads" hidden></section>
+  <section class="view" id="view-cadencia" hidden></section>
+</main>
+
+<div class="scrim" id="scrim" hidden></div>
+<aside class="drawer" id="drawer" hidden aria-modal="true" role="dialog" aria-labelledby="drawer-title"></aside>
+<div class="tip" id="tip" hidden></div>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+/* ================= Constantes ================= */
+const STATUSES = [
+  { id: "novo", label: "Novo", group: "comercial", tone: "" },
+  { id: "abordado", label: "Em cadência", group: "comercial", tone: "accent" },
+  { id: "respondeu", label: "Respondeu", group: "comercial", tone: "warn" },
+  { id: "proposta", label: "Proposta", group: "comercial", tone: "warn" },
+  { id: "perdido", label: "Perdido", group: "comercial", tone: "bad" },
+  { id: "fechado", label: "Fechado", group: "clientes", tone: "good" },
+  { id: "em_construcao", label: "Em construção", group: "clientes", tone: "accent" },
+  { id: "aprovacao_cliente", label: "Aprovação", group: "clientes", tone: "warn" },
+  { id: "entregue", label: "Entregue", group: "clientes", tone: "good" },
+  { id: "manutencao", label: "Manutenção", group: "clientes", tone: "good" },
+  { id: "cancelado", label: "Cancelado", group: "clientes", tone: "bad" },
+];
+const ST = Object.fromEntries(STATUSES.map((s) => [s.id, s]));
+const ORDER = ["novo", "abordado", "respondeu", "proposta", "fechado", "em_construcao", "aprovacao_cliente", "entregue", "manutencao"];
+const PRICES = { landing: 797, institucional: 997 };
+const MENSALIDADE = 150;
+const VARS = ["empresa", "nicho", "cidade", "instagram", "gancho", "problema", "demo", "site"];
+const ICON_CLOCK = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8" cy="8" r="6"/><path d="M8 4.5V8l2.5 1.5" stroke-linecap="round"/></svg>';
+const ICON_GRIP = '<svg viewBox="0 0 16 16" fill="currentColor"><circle cx="5.5" cy="3.5" r="1.3"/><circle cx="10.5" cy="3.5" r="1.3"/><circle cx="5.5" cy="8" r="1.3"/><circle cx="10.5" cy="8" r="1.3"/><circle cx="5.5" cy="12.5" r="1.3"/><circle cx="10.5" cy="12.5" r="1.3"/></svg>';
+
+/* ================= Estado ================= */
+let db = null;
+let leads = [];
+let cadencia = null; // { passos: [{nome, dia, canal, texto}] }
+let metas = null;    // { receitaMes, abordagensSemana }
+let loaded = { leads: false, config: false };
+let view = "painel";
+let board = "comercial";
+let listFilter = { q: "", status: "", nicho: "" };
+let listSort = { key: "nota", dir: "desc" };
+let drafts = {};            // textos editados na aba Hoje, por lead
+let drawerId = null;        // lead aberto na gaveta (null = fechado, "__new" = novo)
+let editingGoals = false;
+let cadDraft = null;        // rascunho do editor de cadência
+
+/* ================= Utilidades ================= */
+const $ = (id) => document.getElementById(id);
+function h(tag, props = {}, ...kids) {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(props || {})) {
+    if (v === undefined || v === null || v === false) continue;
+    if (k === "class") n.className = v;
+    else if (k === "html") n.innerHTML = v;
+    else if (k === "dataset") Object.assign(n.dataset, v);
+    else if (k.startsWith("on")) n.addEventListener(k.slice(2), v);
+    else if (k === "value") n.value = v;
+    else n.setAttribute(k, v === true ? "" : v);
+  }
+  for (const kid of kids.flat()) if (kid !== null && kid !== undefined && kid !== false) n.append(kid);
+  return n;
+}
+const today = () => new Date().toLocaleDateString("sv-SE");
+function addDays(iso, n) { const d = new Date(iso + "T12:00:00"); d.setDate(d.getDate() + n); return d.toLocaleDateString("sv-SE"); }
+function daysBetween(a, b) { return Math.round((new Date(b + "T12:00:00") - new Date(a + "T12:00:00")) / 86400000); }
+const fmtDay = (iso) => iso ? new Date(String(iso).slice(0, 10) + "T12:00:00").toLocaleDateString("pt-BR", { day: "2-digit", month: "short" }).replace(".", "") : "";
+const brl = (v) => "R$ " + Math.round(Number(v || 0)).toLocaleString("pt-BR");
+const brlCompact = (v) => v >= 10000 ? "R$ " + (v / 1000).toLocaleString("pt-BR", { maximumFractionDigits: 1 }) + " mil" : brl(v);
+const pct = (a, b) => b ? Math.round((a / b) * 100) + "%" : "—";
+const handle = (s) => String(s || "").trim().replace(/^@/, "").replace(/^https?:\/\/(www\.)?instagram\.com\//, "").replace(/\/.*$/, "");
+const slug = (s) => handle(s).toLowerCase().replace(/[^a-z0-9_.\-]/g, "");
+const igUrl = (s) => "https://instagram.com/" + handle(s);
+const monthKey = (iso) => String(iso || "").slice(0, 7);
+const steps = () => (cadencia && Array.isArray(cadencia.passos)) ? cadencia.passos : [];
+const nextDate = (l) => l.proximoToque || l.proximoFollowup || "";
+const valorLead = (l) => Number(l.valor) || PRICES[l.pacote] || 0;
+
+function toast(msg) {
+  const t = $("toast");
+  t.textContent = msg; t.hidden = false;
+  clearTimeout(toast._t); toast._t = setTimeout(() => (t.hidden = true), 2600);
+}
+
+function rank(l) {
+  const s = l.status || "novo";
+  if (s === "perdido") {
+    const reached = ["abordado", "respondeu", "proposta"].filter((k) => l.datas && l.datas[k]).map((k) => ORDER.indexOf(k));
+    return Math.max(l.abordadoEm || (l.toque || 0) > 0 ? 1 : 0, ...reached);
+  }
+  if (s === "cancelado") return 4;
+  return Math.max(0, ORDER.indexOf(s));
+}
+function dueState(l) {
+  const d = nextDate(l);
+  if (!d || !["abordado", "proposta"].includes(l.status)) return null;
+  const t = today();
+  return d < t ? "late" : d === t ? "today" : "future";
+}
+function dueChip(l) {
+  const st = dueState(l); if (!st) return null;
+  const d = nextDate(l);
+  const label = st === "late" ? "Atrasado · " + fmtDay(d) : st === "today" ? "Hoje" : fmtDay(d);
+  const s = h("span", { class: "due", "data-late": st === "late", "data-today": st === "today" });
+  s.innerHTML = ICON_CLOCK;
+  s.append(label);
+  return s;
+}
+function statusPill(s) { const m = ST[s || "novo"] || ST.novo; return h("span", { class: "pill", "data-tone": m.tone }, m.label); }
+function cadDots(l) {
+  const n = steps().length || 5, done = Math.min(l.toque || 0, n);
+  const active = ["novo", "abordado"].includes(l.status || "novo");
+  const box = h("span", { class: "dots", title: done + " de " + n + " toques enviados" });
+  for (let i = 0; i < n; i++) box.append(h("i", { "data-done": i < done, "data-next": active && i === done }));
+  return box;
+}
+
+/* ================= Banco ================= */
+async function save(id, patch, { quiet } = {}) {
+  const l = leads.find((x) => x.id === id);
+  if (l) Object.assign(l, patch);
+  renderAll();
+  if (!db) { toast("Banco indisponível: a alteração não foi salva."); return false; }
+  try {
+    await db.collection("leads").doc(id).update({ ...patch, atualizadoEm: new Date().toISOString() });
+    if (!quiet) toast("Salvo");
+    return true;
+  } catch (e) {
+    toast("Não foi possível salvar (" + ((e && e.code) || "erro") + "). Recarregue e tente de novo.");
+    return false;
+  }
+}
+const histItem = (texto, tipo = "nota") => ({ em: new Date().toISOString(), tipo, texto });
+const withHist = (l, ...items) => [...(Array.isArray(l.historico) ? l.historico : []), ...items].slice(-80);
+
+/* Muda o status e aplica as regras do funil (datas, cadência). */
+function setStatus(l, status) {
+  const from = l.status || "novo";
+  if (from === status) return;
+  const t = today();
+  const patch = { status, datas: { ...(l.datas || {}), [status]: (l.datas && l.datas[status]) || t } };
+  if (status === "abordado") {
+    if (!l.abordadoEm) patch.abordadoEm = t;
+    if (!(l.toque > 0)) patch.toque = 1;
+    const s = steps(); const k = patch.toque || l.toque || 1;
+    patch.proximoToque = s[k] ? maxDate(addDays(patch.abordadoEm || l.abordadoEm, s[k].dia), addDays(t, 1)) : "";
+  } else if (status === "respondeu") {
+    patch.respondeuNoToque = l.toque || 0;
+    patch.proximoToque = "";
+  } else if (status === "proposta") {
+    patch.proximoToque = addDays(t, 3);
+  } else {
+    patch.proximoToque = "";
+  }
+  if (status === "manutencao" && !l.manutencao) { patch.manutencao = true; patch.manutencaoDesde = l.manutencaoDesde || t; }
+  patch.historico = withHist(l, histItem((ST[from] ? ST[from].label : from) + " → " + ST[status].label, "status"));
+  save(l.id, patch, { quiet: true });
+  toast(l.empresa + ": " + ST[status].label);
+}
+const maxDate = (a, b) => (a > b ? a : b);
+
+/* Marca o próximo toque da cadência como enviado. */
+function markSent(l, text) {
+  const s = steps();
+  const n = (l.toque || 0) + 1;
+  const t = today();
+  const passo = s[n - 1];
+  const patch = { toque: n, mensagemProxima: "", historico: withHist(l, histItem("Enviado: " + (passo ? passo.nome : "toque " + n) + (text ? " — “" + text.slice(0, 140) + (text.length > 140 ? "…" : "") + "”" : ""), "toque")) };
+  if (n === 1 || (l.status || "novo") === "novo") {
+    patch.status = "abordado";
+    patch.abordadoEm = l.abordadoEm || t;
+    patch.datas = { ...(l.datas || {}), abordado: (l.datas && l.datas.abordado) || t };
+  }
+  const base = patch.abordadoEm || l.abordadoEm || t;
+  if (n >= s.length) {
+    patch.status = "perdido";
+    patch.proximoToque = "";
+    patch.datas = { ...(patch.datas || l.datas || {}), perdido: t };
+    patch.historico.push(histItem("Cadência encerrada com o break-up", "status"));
+  } else {
+    patch.proximoToque = maxDate(addDays(base, s[n].dia), addDays(t, 1));
+  }
+  delete drafts[l.id];
+  save(l.id, patch, { quiet: true });
+  toast(n >= s.length ? "Break-up enviado: lead movido para Perdido" : "Toque " + n + " registrado. Próximo: " + fmtDay(patch.proximoToque));
+}
+
+function fill(tpl, l) {
+  const vals = {
+    empresa: l.empresa, nicho: l.nicho, cidade: l.cidade, instagram: l.instagram ? "@" + handle(l.instagram) : "",
+    gancho: l.gancho, problema: l.problema, demo: l.demo, site: l.site,
+  };
+  const missing = new Set();
+  const text = String(tpl || "").replace(/\{(\w+)\}/g, (m, k) => {
+    if (!(k in vals)) return m;
+    const v = vals[k]; if (v) return v;
+    missing.add(k); return "[" + k + "]";
+  });
+  return { text, missing: [...missing] };
+}
+function messageFor(l) {
+  const s = steps(); const n = (l.toque || 0);
+  const passo = s[n];
+  if (!passo) return { text: "", missing: [], passo: null };
+  if (drafts[l.id] !== undefined) return { text: drafts[l.id], missing: [], passo };
+  if (l.mensagemProxima) return { text: l.mensagemProxima, missing: [], passo, custom: true };
+  return { ...fill(passo.texto, l), passo };
+}
+
+/* ================= Métricas ================= */
+function metrics() {
+  const t = today(), mes = monthKey(t);
+  const abordados = leads.filter((l) => rank(l) >= 1);
+  const responderam = leads.filter((l) => rank(l) >= 2);
+  const propostas = leads.filter((l) => rank(l) >= 3);
+  const fechados = leads.filter((l) => rank(l) >= 4);
+  const receitaPorMes = {};
+  for (const l of leads) {
+    const v = Number(l.valor) || 0; if (!v) continue;
+    if (l.entradaPaga && l.entradaEm) receitaPorMes[monthKey(l.entradaEm)] = (receitaPorMes[monthKey(l.entradaEm)] || 0) + v / 2;
+    if (l.finalPago && l.finalEm) receitaPorMes[monthKey(l.finalEm)] = (receitaPorMes[monthKey(l.finalEm)] || 0) + v / 2;
+  }
+  const comValor = fechados.filter((l) => Number(l.valor) > 0);
+  const ciclos = fechados.filter((l) => l.abordadoEm && l.datas && l.datas.fechado).map((l) => daysBetween(l.abordadoEm, l.datas.fechado));
+  const semana = addDays(t, -6);
+  return {
+    total: leads.length,
+    ativos: leads.filter((l) => ["novo", "abordado", "respondeu", "proposta"].includes(l.status || "novo")).length,
+    abordados: abordados.length, responderam: responderam.length, propostas: propostas.length, fechados: fechados.length,
+    taxaResposta: abordados.length ? responderam.length / abordados.length : null,
+    conversao: abordados.length ? fechados.length / abordados.length : null,
+    ticket: comValor.length ? comValor.reduce((a, l) => a + Number(l.valor), 0) / comValor.length : null,
+    pipeline: leads.filter((l) => l.status === "proposta").reduce((a, l) => a + valorLead(l), 0),
+    nPropostas: leads.filter((l) => l.status === "proposta").length,
+    aReceber: leads.filter((l) => Number(l.valor) && l.entradaPaga && !l.finalPago && l.status !== "cancelado").reduce((a, l) => a + Number(l.valor) / 2, 0),
+    mrr: leads.filter((l) => l.status === "manutencao").length * MENSALIDADE,
+    nManut: leads.filter((l) => l.status === "manutencao").length,
+    ciclo: ciclos.length ? Math.round(ciclos.reduce((a, b) => a + b, 0) / ciclos.length) : null,
+    atrasados: leads.filter((l) => dueState(l) === "late").length,
+    receitaMes: receitaPorMes[mes] || 0,
+    receitaPorMes,
+    abordagensSemana: leads.filter((l) => l.abordadoEm && l.abordadoEm >= semana).length,
+    respostasPorToque: steps().map((p, i) => leads.filter((l) => l.respondeuNoToque === i + 1).length),
+  };
+}
+function todayTasks() {
+  const t = today();
+  const abordar = leads.filter((l) => (l.status || "novo") === "novo" && !(l.toque > 0)).sort((a, b) => (b.nota || 0) - (a.nota || 0));
+  const follow = leads.filter((l) => l.status === "abordado" && nextDate(l) && nextDate(l) <= t).sort((a, b) => nextDate(a).localeCompare(nextDate(b)));
+  const propostas = leads.filter((l) => l.status === "proposta" && nextDate(l) && nextDate(l) <= t);
+  return { abordar, follow, propostas, count: follow.length + propostas.length };
+}
+
+/* ================= Tooltip ================= */
+function tipOn(el, html) {
+  el.addEventListener("pointerenter", (e) => { const t = $("tip"); t.innerHTML = html; t.hidden = false; moveTip(e); });
+  el.addEventListener("pointermove", moveTip);
+  el.addEventListener("pointerleave", () => ($("tip").hidden = true));
+}
+function moveTip(e) {
+  const t = $("tip"); const w = t.offsetWidth, hgt = t.offsetHeight;
+  let x = e.clientX + 14, y = e.clientY - hgt - 10;
+  if (x + w > innerWidth - 8) x = e.clientX - w - 14;
+  if (y < 8) y = e.clientY + 16;
+  t.style.left = x + "px"; t.style.top = y + "px";
+}
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+/* ================= Visão: Painel ================= */
+function hbarChart(rows, { fmt = (v) => String(v), conv = false } = {}) {
+  const max = Math.max(1, ...rows.map((r) => r.value));
+  const box = h("div", { class: "hbars" });
+  rows.forEach((r, i) => {
+    if (conv && i > 0) box.append(h("div", { class: "step-conv" }, "↓ " + pct(r.value, rows[i - 1].value) + " avançam"));
+    const fillEl = h("div", { class: "hbar-fill", style: "width:" + (r.value / max) * 100 + "%" });
+    const hit = h("div", { class: "hbar-hit" });
+    tipOn(hit, "<b>" + esc(r.label) + "</b><br>" + esc(r.tip || fmt(r.value)));
+    box.append(h("div", { class: "hbar" },
+      h("span", { class: "hbar-label", title: r.label }, r.label),
+      h("div", { class: "hbar-track" }, fillEl, hit),
+      h("span", { class: "hbar-val num" }, fmt(r.value), r.sub ? h("small", {}, r.sub) : null)));
+  });
+  return box;
+}
+function tableView(head, rows) {
+  return h("details", { class: "table-view" }, h("summary", {}, "Ver em tabela"),
+    h("table", {}, h("thead", {}, h("tr", {}, head.map((c) => h("th", {}, c)))),
+      h("tbody", {}, rows.map((r) => h("tr", {}, r.map((c) => h("td", { class: "num" }, String(c))))))));
+}
+function chartCard(title, sub, body) {
+  return h("section", { class: "card" }, h("div", { class: "card-h" }, h("h2", {}, title), sub ? h("span", { class: "faint" }, sub) : null), h("div", { class: "card-b" }, body));
+}
+
+function renderPainel() {
+  const v = $("view-painel"); v.replaceChildren();
+  const m = metrics();
+  const meta = metas || {};
+  v.append(h("div", { class: "view-head" }, h("div", {}, h("h1", {}, "Painel comercial"),
+    h("p", {}, "Como está o funil, a cadência e a receita. Os números se atualizam sozinhos quando os agentes ou você mexem nos leads."))));
+
+  if (loaded.leads && !leads.length) {
+    v.append(h("section", { class: "card empty" }, h("h2", {}, "Nenhum lead ainda"),
+      h("p", {}, "Os leads chegam aqui quando o Quico Qualificador termina uma rodada do squad de Prospecção (rode /ponttosquad no projeto → Rodar um squad → prospeccao-de-clientes). Você também pode cadastrar um lead à mão."),
+      h("button", { class: "btn primary", type: "button", onclick: () => openDrawer("__new") }, "Cadastrar lead")));
+  }
+
+  // Herói: receita do mês + metas
+  const metaRec = Number(meta.receitaMes) || 0;
+  const metaAb = Number(meta.abordagensSemana) || 0;
+  const hero = h("section", { class: "card hero" },
+    h("span", { class: "hero-label" }, "Receita recebida em " + new Date().toLocaleDateString("pt-BR", { month: "long" })),
+    h("span", { class: "hero-value num" }, brl(m.receitaMes)),
+    metaRec ? h("div", { class: "goal-row" },
+      h("div", { class: "meter", "data-done": m.receitaMes >= metaRec }, h("span", { style: "width:" + Math.min(100, (m.receitaMes / metaRec) * 100) + "%" })),
+      h("div", { class: "hero-sub" }, h("span", {}, pct(m.receitaMes, metaRec) + " da meta"), h("span", { class: "num" }, "Meta " + brl(metaRec)))) : null,
+    h("div", { class: "hero-goals" },
+      metaAb ? h("div", { class: "goal-row" },
+        h("div", { class: "hero-sub" }, h("span", {}, "Novas abordagens (últimos 7 dias)"), h("span", { class: "num" }, m.abordagensSemana + " de " + metaAb)),
+        h("div", { class: "meter", "data-done": m.abordagensSemana >= metaAb }, h("span", { style: "width:" + Math.min(100, (m.abordagensSemana / metaAb) * 100) + "%" }))) : null,
+      h("div", { class: "hero-sub" }, h("span", {}, "Manutenção recorrente"), h("span", { class: "num" }, m.nManut + " × " + brl(MENSALIDADE) + " = " + brl(m.mrr) + "/mês")),
+      editingGoals ? goalForm(meta) : h("div", {}, h("button", { class: "btn ghost sm", type: "button", onclick: () => { editingGoals = true; renderPainel(); } }, metaRec || metaAb ? "Editar metas" : "Definir metas"))));
+
+  const tile = (label, value, sub, alert) => h("div", { class: "tile", "data-alert": alert }, h("span", { class: "tile-label" }, label), h("span", { class: "tile-value num" }, value), sub ? h("span", { class: "tile-sub" }, sub) : null);
+  const tiles = h("section", { class: "card tiles" },
+    tile("Leads no funil comercial", String(m.ativos), m.total + " no total"),
+    tile("Taxa de resposta", m.taxaResposta == null ? "—" : Math.round(m.taxaResposta * 100) + "%", m.responderam + " de " + m.abordados + " abordados"),
+    tile("Conversão em cliente", m.conversao == null ? "—" : Math.round(m.conversao * 100) + "%", m.fechados + " fechados"),
+    tile("Ticket médio", m.ticket == null ? "—" : brl(m.ticket), "por projeto fechado"),
+    tile("Em proposta", brl(m.pipeline), m.nPropostas + (m.nPropostas === 1 ? " proposta aberta" : " propostas abertas")),
+    tile("A receber", brl(m.aReceber), "50% finais de projetos em andamento"),
+    tile("Ciclo de venda", m.ciclo == null ? "—" : m.ciclo + " dias", "da abordagem ao fechamento"),
+    tile("Follow-ups atrasados", String(m.atrasados), m.atrasados ? "veja a aba Hoje" : "tudo em dia", m.atrasados > 0));
+  v.append(h("div", { class: "dash-top" }, hero, tiles));
+
+  // Gráficos
+  const funil = [
+    { label: "Abordados", value: m.abordados },
+    { label: "Responderam", value: m.responderam },
+    { label: "Proposta", value: m.propostas },
+    { label: "Fechados", value: m.fechados },
+  ];
+  const funilBody = m.abordados ? [hbarChart(funil, { conv: true }), tableView(["Etapa", "Leads"], funil.map((r) => [r.label, r.value]))]
+    : [h("p", { class: "chart-empty" }, "O funil aparece quando o primeiro lead for abordado.")];
+
+  // Receita: últimos 6 meses
+  const months = []; const d0 = new Date(); d0.setDate(1);
+  for (let i = 5; i >= 0; i--) { const d = new Date(d0.getFullYear(), d0.getMonth() - i, 1); months.push({ key: d.toLocaleDateString("sv-SE").slice(0, 7), label: d.toLocaleDateString("pt-BR", { month: "short" }).replace(".", "") }); }
+  const rv = months.map((mo) => m.receitaPorMes[mo.key] || 0);
+  const anyRev = rv.some((x) => x > 0);
+  let receitaBody;
+  if (anyRev) {
+    const top = niceMax(Math.max(...rv));
+    const plot = h("div", { class: "cols-plot" }, h("div", { class: "cols-grid" }, h("span"), h("span"), h("span"), h("span")));
+    const maxI = rv.indexOf(Math.max(...rv));
+    months.forEach((mo, i) => {
+      const bar = h("div", { class: "col-bar" }, h("i", { style: "height:" + (rv[i] / top) * 100 + "%" }), (i === maxI || i === 5) && rv[i] ? h("b", { class: "num", style: "bottom:" + (rv[i] / top) * 100 + "%" }, brlCompact(rv[i])) : null);
+      tipOn(bar, "<b>" + esc(mo.label) + "</b><br>" + esc(brl(rv[i])) + " recebidos");
+      plot.append(bar);
+    });
+    receitaBody = [h("div", { class: "cols" },
+      h("div", { class: "cols-axis num" }, [top, top * 2 / 3, top / 3, 0].map((x) => h("span", {}, brlCompact(x).replace("R$ ", "")))),
+      plot, h("div", { class: "cols-x" }, months.map((mo) => h("span", {}, mo.label)))),
+      tableView(["Mês", "Recebido"], months.map((mo, i) => [mo.label, brl(rv[i])]))];
+  } else receitaBody = [h("p", { class: "chart-empty" }, "Sem pagamentos registrados ainda. Marque entrada e final pagos na ficha do cliente.")];
+
+  // Respostas por toque
+  const s = steps();
+  const rpt = s.map((p, i) => ({ label: p.nome || "Toque " + (i + 1), value: m.respostasPorToque[i] || 0 }));
+  const respostas = rpt.reduce((a, r) => a + r.value, 0);
+  const toqueBody = respostas ? [hbarChart(rpt.map((r) => ({ ...r, sub: pct(r.value, respostas), tip: r.value + " resposta(s) · " + pct(r.value, respostas) + " das respostas" }))),
+    tableView(["Toque", "Respostas"], rpt.map((r) => [r.label, r.value]))]
+    : [h("p", { class: "chart-empty" }, "Mostra em qual toque da cadência os leads respondem. Aparece quando o primeiro lead responder.")];
+
+  // Leads por nicho
+  const porNicho = {};
+  for (const l of leads) { const k = l.nicho || "Sem nicho"; (porNicho[k] = porNicho[k] || { n: 0, r: 0, f: 0 }); porNicho[k].n++; if (rank(l) >= 2) porNicho[k].r++; if (rank(l) >= 4) porNicho[k].f++; }
+  const nich = Object.entries(porNicho).sort((a, b) => b[1].n - a[1].n).slice(0, 7)
+    .map(([k, x]) => ({ label: k, value: x.n, sub: x.r ? pct(x.r, x.n) + " resp." : "", tip: x.n + " leads · " + x.r + " responderam · " + x.f + " fechados" }));
+  const nichoBody = nich.length ? [hbarChart(nich), tableView(["Nicho", "Leads"], nich.map((r) => [r.label, r.value]))]
+    : [h("p", { class: "chart-empty" }, "Sem leads ainda.")];
+
+  v.append(h("div", { class: "charts" },
+    chartCard("Funil de vendas", "leads que chegaram a cada etapa", funilBody),
+    chartCard("Receita recebida por mês", "entradas e pagamentos finais", receitaBody),
+    chartCard("Em qual toque eles respondem", "respostas por etapa da cadência", toqueBody),
+    chartCard("Leads por nicho", "volume e taxa de resposta", nichoBody)));
+}
+function niceMax(v) { if (v <= 0) return 1; const p = Math.pow(10, Math.floor(Math.log10(v))); const n = v / p; return (n <= 1.5 ? 1.5 : n <= 3 ? 3 : n <= 6 ? 6 : 12) * p; }
+function goalForm(meta) {
+  const rec = h("input", { class: "field num", id: "goal-rec", type: "number", min: "0", step: "50", value: meta.receitaMes || "" });
+  const ab = h("input", { class: "field num", id: "goal-ab", type: "number", min: "0", step: "1", value: meta.abordagensSemana || "" });
+  return h("form", { class: "goal-form", onsubmit: async (e) => {
+      e.preventDefault();
+      const data = { receitaMes: Number(rec.value) || 0, abordagensSemana: Number(ab.value) || 0 };
+      metas = data; editingGoals = false; renderPainel();
+      if (db) { try { await db.collection("config").doc("metas").set(data); toast("Metas salvas"); } catch (err) { toast("Não foi possível salvar as metas."); } }
+    } },
+    h("label", { for: "goal-rec" }, "Meta de receita no mês (R$)", rec),
+    h("label", { for: "goal-ab" }, "Abordagens por semana", ab),
+    h("button", { class: "btn primary sm", type: "submit" }, "Salvar"),
+    h("button", { class: "btn ghost sm", type: "button", onclick: () => { editingGoals = false; renderPainel(); } }, "Cancelar"));
+}
+
+/* ================= Visão: Hoje ================= */
+function taskCard(l, kind) {
+  const s = steps();
+  const head = h("div", { class: "task-h" },
+    h("div", {}, h("h3", {}, l.empresa || "Sem nome"),
+      h("div", { class: "faint" }, [l.instagram ? "@" + handle(l.instagram) : "", l.nicho, [l.cidade, l.uf].filter(Boolean).join("/")].filter(Boolean).join(" · "))),
+    kind === "proposta" ? h("span", { class: "step-tag" }, "Retomar proposta") : h("span", { class: "step-tag" }, (s[l.toque || 0] || {}).nome || "Toque"));
+  const card = h("article", { class: "card task" }, head);
+  if (kind === "proposta") {
+    card.append(h("p", { class: "muted", style: "margin:0" }, "Proposta enviada" + (l.datas && l.datas.proposta ? " em " + fmtDay(l.datas.proposta) : "") + ". Pergunte se ficou alguma dúvida ou peça para a Vera Vendas preparar a resposta às objeções."),
+      h("div", { class: "task-actions" },
+        h("button", { class: "btn sm", type: "button", onclick: () => save(l.id, { proximoToque: addDays(today(), 3), historico: withHist(l, histItem("Follow-up da proposta feito")) }) }, "Fiz o follow-up (+3 dias)"),
+        h("button", { class: "btn sm", type: "button", onclick: () => setStatus(l, "fechado") }, "Fechou"),
+        h("button", { class: "btn ghost sm", type: "button", onclick: () => setStatus(l, "perdido") }, "Perdido"),
+        h("button", { class: "btn ghost sm", type: "button", onclick: () => openDrawer(l.id) }, "Abrir ficha")));
+    return card;
+  }
+  const msg = messageFor(l);
+  const ta = h("textarea", { class: "msg", id: "msg-" + l.id, "aria-label": "Mensagem para " + (l.empresa || "") });
+  ta.value = msg.text;
+  ta.addEventListener("input", () => { drafts[l.id] = ta.value; });
+  const meta = h("div", { class: "faint", style: "font-size:12px" },
+    msg.passo ? (msg.passo.canal || "") + (msg.custom ? " · mensagem personalizada pelos agentes" : " · modelo da cadência") : "");
+  card.append(ta);
+  if (msg.missing && msg.missing.length) card.append(h("span", { class: "missing" }, "Faltam dados: " + msg.missing.map((k) => "{" + k + "}").join(", ") + ". Complete na ficha ou edite o texto."));
+  const actions = h("div", { class: "task-actions" },
+    h("button", { class: "btn primary sm", type: "button", onclick: () => copyText(ta) }, "Copiar"),
+    l.instagram ? h("a", { class: "btn sm", href: igUrl(l.instagram), target: "_blank", rel: "noopener" }, "Abrir Instagram") : null,
+    l.whatsapp ? h("a", { class: "btn sm", href: "https://wa.me/" + String(l.whatsapp).replace(/\D/g, "") + "?text=" + encodeURIComponent(ta.value), target: "_blank", rel: "noopener" }, "Abrir WhatsApp") : null,
+    h("button", { class: "btn sm", type: "button", onclick: () => markSent(l, ta.value) }, "Marquei como enviado"),
+    kind === "follow" ? h("button", { class: "btn ghost sm", type: "button", onclick: () => setStatus(l, "respondeu") }, "Respondeu") : null,
+    h("button", { class: "btn ghost sm", type: "button", onclick: () => openDrawer(l.id) }, "Ficha"));
+  card.append(meta, actions);
+  return card;
+}
+function copyText(ta) {
+  const text = ta.value;
+  try {
+    navigator.clipboard.writeText(text).then(() => toast("Mensagem copiada"), () => { ta.focus(); ta.select(); toast("Texto selecionado: copie com Ctrl+C / Cmd+C"); });
+  } catch (e) { ta.focus(); ta.select(); toast("Texto selecionado: copie com Ctrl+C / Cmd+C"); }
+}
+function renderHoje() {
+  const v = $("view-hoje"); v.replaceChildren();
+  const t = todayTasks();
+  v.append(h("div", { class: "view-head" }, h("div", {}, h("h1", {}, "Hoje"),
+    h("p", {}, "As mensagens do dia, já preenchidas com os modelos da cadência. Copie, envie pelo Instagram ou WhatsApp e marque como enviado: o próximo toque é agendado sozinho."))));
+  if (!steps().length) v.append(h("p", { class: "banner" }, "Nenhum modelo de cadência salvo. Configure na aba Cadência."));
+  const block = (title, list, kind, emptyText) => h("section", {},
+    h("h2", { class: "section-title" }, title, h("span", { class: "badge", "data-zero": !list.length }, String(list.length))),
+    list.length ? h("div", { class: "task-list" }, list.map((l) => taskCard(l, kind))) : h("p", { class: "faint", style: "margin:0" }, emptyText));
+  v.append(h("div", { class: "today-cols" },
+    block("Follow-ups de hoje e atrasados", t.follow, "follow", "Nenhum follow-up para hoje."),
+    block("Propostas para retomar", t.propostas, "proposta", "Nenhuma proposta esperando retorno."),
+    block("Prontos para a primeira abordagem", t.abordar.slice(0, 12), "abordar", "Nenhum lead novo esperando abordagem.")));
+  if (t.abordar.length > 12) v.append(h("p", { class: "faint" }, "Mostrando os 12 leads novos com maior nota de " + t.abordar.length + "."));
+}
+
+/* ================= Visão: Kanban ================= */
+function renderKanban() {
+  const v = $("view-kanban"); v.replaceChildren();
+  v.append(h("div", { class: "view-head" },
+    h("div", {}, h("h1", {}, "Kanban"), h("p", {}, "Arraste os cartões entre as colunas para mudar a etapa. No celular, arraste pelo ícone de pontinhos. Clique num cartão para abrir a ficha.")),
+    h("div", { class: "seg", role: "group", "aria-label": "Quadro" },
+      h("button", { type: "button", "aria-pressed": board === "comercial", onclick: () => { board = "comercial"; renderKanban(); } }, "Comercial"),
+      h("button", { type: "button", "aria-pressed": board === "clientes", onclick: () => { board = "clientes"; renderKanban(); } }, "Clientes"))));
+  const b = h("div", { class: "board", id: "board" });
+  for (const s of STATUSES.filter((x) => x.group === board)) {
+    const items = leads.filter((l) => (l.status || "novo") === s.id).sort(kanbanSort(s.id));
+    const total = items.reduce((a, l) => a + (Number(l.valor) || 0), 0);
+    const body = h("div", { class: "col-body" }, items.length ? items.map(kcard) : h("div", { class: "col-empty" }, "Arraste um cartão para cá"));
+    b.append(h("section", { class: "col", dataset: { status: s.id }, "aria-label": s.label },
+      h("div", { class: "col-h", style: "--dot: var(--" + (s.tone ? ({ accent: "accent", good: "good", warn: "warn", bad: "bad" })[s.tone] : "fg-3") + ")" },
+        h("strong", {}, s.label), h("span", { class: "faint num" }, items.length + (total ? " · " + brlCompact(total) : ""))),
+      body));
+  }
+  v.append(b);
+}
+function kanbanSort(status) {
+  if (status === "abordado" || status === "proposta") return (a, b) => (nextDate(a) || "9").localeCompare(nextDate(b) || "9");
+  return (a, b) => (b.nota || 0) - (a.nota || 0);
+}
+function kcard(l) {
+  const grip = h("button", { class: "grip", type: "button", "aria-label": "Arrastar " + (l.empresa || ""), html: ICON_GRIP });
+  const c = h("article", { class: "kcard", tabindex: "0", dataset: { id: l.id }, "aria-label": l.empresa || "Lead" },
+    h("div", { class: "kcard-top" }, h("span", { class: "kcard-name" }, l.empresa || "Sem nome"), grip),
+    h("span", { class: "kcard-meta" }, [l.instagram ? "@" + handle(l.instagram) : "", l.nicho, l.cidade].filter(Boolean).join(" · ")),
+    h("div", { class: "kcard-foot" },
+      h("span", { style: "display:inline-flex;gap:8px;align-items:center" }, l.nota != null ? h("span", { class: "score num", "data-hi": l.nota >= 8 }, l.nota + "/10") : null,
+        ["novo", "abordado", "perdido"].includes(l.status || "novo") ? cadDots(l) : (l.valor ? h("span", { class: "money num" }, brl(l.valor)) : null)),
+      dueChip(l)));
+  c.addEventListener("keydown", (e) => { if (e.key === "Enter") openDrawer(l.id); });
+  c.addEventListener("click", (e) => { if (dragState.suppress) return; if (e.target.closest(".grip")) return; openDrawer(l.id); });
+  c.addEventListener("pointerdown", (e) => {
+    if (e.button !== 0) return;
+    const onGrip = !!e.target.closest(".grip");
+    if (e.pointerType !== "mouse" && !onGrip) return; // no toque, arraste só pelo ícone
+    beginPress(e, c, l);
+  });
+  return c;
+}
+
+/* Arrastar e soltar (mouse e toque) */
+const dragState = { suppress: false };
+let drag = null;
+function beginPress(e, card, lead) {
+  drag = { lead, card, x0: e.clientX, y0: e.clientY, started: false, ghost: null, over: null, dx: 0, dy: 0 };
+  card.setPointerCapture(e.pointerId);
+  card.addEventListener("pointermove", onDragMove);
+  card.addEventListener("pointerup", onDragEnd);
+  card.addEventListener("pointercancel", onDragEnd);
+}
+function onDragMove(e) {
+  if (!drag) return;
+  if (!drag.started) {
+    if (Math.hypot(e.clientX - drag.x0, e.clientY - drag.y0) < 6) return;
+    const r = drag.card.getBoundingClientRect();
+    drag.dx = drag.x0 - r.left; drag.dy = drag.y0 - r.top;
+    drag.ghost = drag.card.cloneNode(true);
+    drag.ghost.classList.add("ghost");
+    drag.ghost.style.width = r.width + "px";
+    document.body.append(drag.ghost);
+    drag.card.dataset.placeholder = "";
+    document.body.dataset.dragging = "";
+    drag.started = true;
+  }
+  e.preventDefault();
+  drag.ghost.style.left = e.clientX - drag.dx + "px";
+  drag.ghost.style.top = e.clientY - drag.dy + "px";
+  const under = document.elementFromPoint(e.clientX, e.clientY);
+  const col = under && under.closest(".col");
+  if (drag.over && drag.over !== col) delete drag.over.dataset.over;
+  if (col) col.dataset.over = "";
+  drag.over = col;
+  const bd = $("board");
+  if (bd) { const r = bd.getBoundingClientRect(); if (e.clientX > r.right - 60) bd.scrollLeft += 14; else if (e.clientX < r.left + 60) bd.scrollLeft -= 14; }
+}
+function onDragEnd(e) {
+  if (!drag) return;
+  const d = drag; drag = null;
+  d.card.removeEventListener("pointermove", onDragMove);
+  d.card.removeEventListener("pointerup", onDragEnd);
+  d.card.removeEventListener("pointercancel", onDragEnd);
+  if (!d.started) return;
+  dragState.suppress = true; setTimeout(() => (dragState.suppress = false), 50);
+  d.ghost.remove();
+  delete d.card.dataset.placeholder;
+  delete document.body.dataset.dragging;
+  if (d.over) delete d.over.dataset.over;
+  const target = e.type === "pointerup" && d.over ? d.over.dataset.status : null;
+  if (target && target !== (d.lead.status || "novo")) setStatus(d.lead, target);
+}
+
+/* ================= Visão: Leads (lista) ================= */
+function renderLeads() {
+  const v = $("view-leads"); v.replaceChildren();
+  v.append(h("div", { class: "view-head" }, h("div", {}, h("h1", {}, "Leads e clientes"), h("p", {}, "Todos os registros, com busca e filtros. Clique numa linha para abrir a ficha."))));
+  const nichos = [...new Set(leads.map((l) => l.nicho).filter(Boolean))].sort((a, b) => a.localeCompare(b, "pt-BR"));
+  const q = h("input", { class: "field", type: "search", id: "f-q", placeholder: "Buscar empresa, @, nicho ou cidade", "aria-label": "Buscar", value: listFilter.q });
+  const st = h("select", { class: "field", id: "f-status", "aria-label": "Filtrar por etapa" }, h("option", { value: "" }, "Todas as etapas"),
+    ["comercial", "clientes"].map((g) => h("optgroup", { label: g === "comercial" ? "Comercial" : "Clientes" }, STATUSES.filter((s) => s.group === g).map((s) => h("option", { value: s.id }, s.label)))));
+  st.value = listFilter.status;
+  const ni = h("select", { class: "field", id: "f-nicho", "aria-label": "Filtrar por nicho" }, h("option", { value: "" }, "Todos os nichos"), nichos.map((n) => h("option", { value: n }, n)));
+  ni.value = nichos.includes(listFilter.nicho) ? listFilter.nicho : "";
+  const tbodyBox = h("div");
+  const apply = () => { listFilter = { q: q.value, status: st.value, nicho: ni.value }; tbodyBox.replaceChildren(leadsTable()); };
+  q.addEventListener("input", apply); st.addEventListener("change", apply); ni.addEventListener("change", apply);
+  v.append(h("div", { class: "filters" }, q, st, ni), tbodyBox);
+  tbodyBox.append(leadsTable());
+}
+function leadsTable() {
+  const qq = listFilter.q.trim().toLowerCase();
+  let rows = leads.filter((l) => (!listFilter.status || (l.status || "novo") === listFilter.status) && (!listFilter.nicho || l.nicho === listFilter.nicho)
+    && (!qq || [l.empresa, l.instagram, l.nicho, l.cidade].join(" ").toLowerCase().includes(qq)));
+  const k = listSort.key, m = listSort.dir === "asc" ? 1 : -1;
+  const val = (l) => k === "status" ? ORDER.indexOf(l.status || "novo") : k === "proximo" ? (nextDate(l) || "9999") : k === "valor" ? (Number(l.valor) || 0) : k === "nota" ? (l.nota ?? -1) : String(l[k] || "").toLowerCase();
+  rows.sort((a, b) => { const x = val(a), y = val(b); return (typeof x === "number" ? x - y : String(x).localeCompare(String(y), "pt-BR")) * m; });
+  const cols = [["empresa", "Empresa"], ["nicho", "Nicho · cidade"], ["nota", "Nota"], ["status", "Etapa"], ["toque", "Cadência"], ["proximo", "Próximo toque"], ["valor", "Valor"]];
+  const head = h("tr", {}, cols.map(([key, label]) => {
+    const th = h("th", { scope: "col", "aria-sort": listSort.key === key ? (listSort.dir === "asc" ? "ascending" : "descending") : null, tabindex: "0" }, label);
+    const go = () => { listSort = listSort.key === key ? { key, dir: listSort.dir === "asc" ? "desc" : "asc" } : { key, dir: ["nota", "valor"].includes(key) ? "desc" : "asc" }; renderLeads(); };
+    th.addEventListener("click", go); th.addEventListener("keydown", (e) => { if (e.key === "Enter") go(); });
+    return th;
+  }));
+  const body = h("tbody", {}, rows.map((l) => {
+    const tr = h("tr", { tabindex: "0", onclick: () => openDrawer(l.id) },
+      h("td", {}, h("div", { class: "cell-name" }, l.empresa || "Sem nome"), h("div", { class: "cell-sub" }, l.instagram ? "@" + handle(l.instagram) : "")),
+      h("td", {}, h("div", {}, l.nicho || "—"), h("div", { class: "cell-sub" }, [l.cidade, l.uf].filter(Boolean).join("/"))),
+      h("td", {}, l.nota != null ? h("span", { class: "score num", "data-hi": l.nota >= 8 }, l.nota + "/10") : "—"),
+      h("td", {}, statusPill(l.status)),
+      h("td", {}, cadDots(l)),
+      h("td", {}, dueChip(l) || h("span", { class: "faint" }, "—")),
+      h("td", { class: "num" }, l.valor ? brl(l.valor) : h("span", { class: "faint" }, "—")));
+    tr.addEventListener("keydown", (e) => { if (e.key === "Enter") openDrawer(l.id); });
+    return tr;
+  }));
+  const card = h("div", { class: "card table-box" }, h("table", { class: "leads" }, h("thead", {}, head), body));
+  if (!rows.length) card.append(h("p", { class: "faint", style: "padding: 16px 18px; margin: 0" }, leads.length ? "Nenhum registro com esses filtros." : "Nenhum lead ainda."));
+  return card;
+}
+
+/* ================= Visão: Cadência ================= */
+function renderCadencia() {
+  const v = $("view-cadencia"); v.replaceChildren();
+  if (!cadDraft) cadDraft = JSON.parse(JSON.stringify(steps()));
+  v.append(h("div", { class: "view-head" }, h("div", {}, h("h1", {}, "Cadência de abordagem"),
+    h("p", {}, "Quatro toques e um break-up. O dia conta a partir da primeira abordagem. Os modelos preenchem a aba Hoje e servem de base para a Vera Vendas personalizar."))));
+  if (!cadDraft.length) {
+    v.append(h("section", { class: "card empty" }, h("h2", {}, "Nenhum modelo salvo"), h("p", {}, "Peça ao Claude para recriar os modelos padrão da cadência neste painel.")));
+    return;
+  }
+  // Linha do tempo com quantos leads estão em cada toque
+  const tl = h("section", { class: "card timeline", "aria-label": "Linha do tempo da cadência" });
+  cadDraft.forEach((p, i) => {
+    const aguardando = leads.filter((l) => (i === 0 ? (l.status || "novo") === "novo" && !(l.toque > 0) : l.status === "abordado" && (l.toque || 0) === i)).length;
+    const respostas = leads.filter((l) => l.respondeuNoToque === i + 1).length;
+    tl.append(h("div", { class: "tl-step", style: "--i:" + i },
+      h("span", { class: "tl-day" }, "Dia " + (p.dia ?? 0)), h("span", { class: "tl-name" }, p.nome || "Toque " + (i + 1)),
+      h("span", { class: "tl-count num" }, aguardando + " na fila · " + respostas + " resp.")));
+  });
+  const sample = leads.find((l) => l.empresa) || { empresa: "Doces da Maria (exemplo)", nicho: "confeitaria", cidade: "Recife", instagram: "docesdamaria", gancho: "adorei o bolo de rolo do último post", problema: "o link da bio leva só para o WhatsApp", demo: "https://exemplo.vercel.app" };
+  const list = h("div", { class: "steps" });
+  cadDraft.forEach((p, i) => {
+    const nome = h("input", { id: "cad-nome-" + i, value: p.nome || "" });
+    const dia = h("input", { id: "cad-dia-" + i, type: "number", min: "0", value: p.dia ?? 0 });
+    const canal = h("input", { id: "cad-canal-" + i, value: p.canal || "" });
+    const ta = h("textarea", { id: "cad-texto-" + i });
+    ta.value = p.texto || "";
+    const prev = h("div", { class: "preview" });
+    const upd = () => { p.nome = nome.value; p.dia = Number(dia.value) || 0; p.canal = canal.value; p.texto = ta.value; prev.textContent = fill(ta.value, sample).text; };
+    [nome, dia, canal, ta].forEach((x) => x.addEventListener("input", upd));
+    upd();
+    const vars = h("div", { class: "vars" }, VARS.map((k) => h("button", { class: "var", type: "button", onclick: () => {
+      const s0 = ta.selectionStart ?? ta.value.length, s1 = ta.selectionEnd ?? s0;
+      ta.value = ta.value.slice(0, s0) + "{" + k + "}" + ta.value.slice(s1); ta.focus(); ta.selectionStart = ta.selectionEnd = s0 + k.length + 2; upd();
+    } }, "{" + k + "}")));
+    list.append(h("section", { class: "card step" },
+      h("div", { class: "step-row" },
+        h("label", { class: "f", for: "cad-nome-" + i }, "Nome do toque", nome),
+        h("label", { class: "f", for: "cad-dia-" + i }, "Dia", dia),
+        h("label", { class: "f", for: "cad-canal-" + i }, "Canal", canal)),
+      h("label", { class: "f", for: "cad-texto-" + i }, "Mensagem", ta),
+      vars,
+      h("div", { class: "f" }, h("span", { class: "faint", style: "font-size:12px" }, "Prévia com " + (leads.find((l) => l.empresa) ? sample.empresa : "um lead de exemplo")), prev)));
+  });
+  const saveBar = h("div", { class: "save-bar" },
+    h("button", { class: "btn primary", type: "button", onclick: async () => {
+      const passos = cadDraft.map((p) => ({ nome: p.nome, dia: Number(p.dia) || 0, canal: p.canal, texto: p.texto }));
+      for (let i = 1; i < passos.length; i++) if (passos[i].dia <= passos[i - 1].dia) { toast("Os dias precisam ser crescentes (toque " + (i + 1) + ")."); return; }
+      cadencia = { ...(cadencia || {}), passos };
+      if (!db) { toast("Banco indisponível."); return; }
+      try { await db.collection("config").doc("cadencia").set(cadencia); toast("Cadência salva"); } catch (e) { toast("Não foi possível salvar a cadência."); }
+    } }, "Salvar cadência"),
+    h("button", { class: "btn ghost", type: "button", onclick: () => { cadDraft = null; renderCadencia(); } }, "Descartar alterações"));
+  const side = h("aside", { class: "card side-note" }, h("h2", {}, "Variáveis"),
+    h("ul", {},
+      h("li", {}, h("code", {}, "{empresa}"), " nome do negócio"),
+      h("li", {}, h("code", {}, "{gancho}"), " algo específico do perfil (do dossiê)"),
+      h("li", {}, h("code", {}, "{problema}"), " o principal problema do site atual"),
+      h("li", {}, h("code", {}, "{demo}"), " link da demo, se houver"),
+      h("li", {}, h("code", {}, "{nicho}"), ", ", h("code", {}, "{cidade}"), ", ", h("code", {}, "{instagram}"), ", ", h("code", {}, "{site}"))),
+    h("h2", {}, "Como funciona"),
+    h("ul", {},
+      h("li", {}, "Ao marcar o toque 1 como enviado, o lead vai para “Em cadência” e o próximo toque é agendado."),
+      h("li", {}, "Se o lead responder, mova para “Respondeu”: a cadência para."),
+      h("li", {}, "Depois do break-up, o lead vai para “Perdido” (dá para reabrir arrastando no kanban)."),
+      h("li", {}, "Se os agentes escreverem uma mensagem personalizada para o próximo toque, ela aparece no lugar do modelo.")));
+  v.append(tl, h("div", { class: "cad-grid" }, h("div", { class: "steps" }, list, saveBar), side));
+}
+
+/* ================= Gaveta: ficha do lead ================= */
+const FIELDS = [
+  ["empresa", "Empresa", "text"], ["instagram", "Instagram (@)", "text"],
+  ["whatsapp", "WhatsApp comercial", "tel"], ["nicho", "Nicho", "text"],
+  ["cidade", "Cidade", "text"], ["uf", "UF", "text"],
+  ["site", "Site atual", "url"], ["seguidores", "Seguidores", "number"],
+  ["nota", "Nota (0–10)", "number"], ["oportunidade", "Oportunidade", "select", [["", "—"], ["alta", "Alta"], ["media", "Média"], ["baixa", "Baixa"]]],
+  ["pacote", "Pacote", "select", [["", "—"], ["landing", "Landing (R$ 797)"], ["institucional", "Institucional (R$ 997)"]]], ["valor", "Valor fechado (R$)", "number"],
+  ["gancho", "Gancho de abordagem", "text", null, true], ["problema", "Principal problema do site", "text", null, true],
+  ["demo", "Link da demo", "url"], ["urlProducao", "Site no ar", "url"],
+  ["dossie", "Dossiê (arquivo)", "text", null, true],
+  ["mensagemProxima", "Mensagem personalizada do próximo toque", "textarea", null, true],
+  ["notas", "Notas", "textarea", null, true],
+];
+function openDrawer(id) { drawerId = id; renderDrawer(); $("drawer").hidden = false; $("scrim").hidden = false; setTimeout(() => { const f = $("drawer").querySelector("input, button"); if (f) f.focus(); }, 30); }
+function closeDrawer() { drawerId = null; $("drawer").hidden = true; $("scrim").hidden = true; $("drawer").replaceChildren(); }
+function renderDrawer() {
+  const d = $("drawer"); d.replaceChildren();
+  const isNew = drawerId === "__new";
+  const l = isNew ? { status: "novo" } : leads.find((x) => x.id === drawerId);
+  if (!l) { closeDrawer(); return; }
+  const inputs = {};
+  const grid = h("div", { class: "fgrid" });
+  for (const [key, label, type, opts, full] of FIELDS) {
+    let inp;
+    if (type === "select") { inp = h("select", { id: "fd-" + key }, opts.map(([v, t]) => h("option", { value: v }, t))); inp.value = l[key] || ""; }
+    else if (type === "textarea") { inp = h("textarea", { id: "fd-" + key }); inp.value = l[key] || ""; }
+    else inp = h("input", { id: "fd-" + key, type, value: l[key] ?? "", ...(type === "number" ? { step: "any" } : {}) });
+    if (key === "instagram" && !isNew) inp.setAttribute("readonly", "");
+    inputs[key] = inp;
+    grid.append(h("label", { class: "f" + (full ? " full" : ""), for: "fd-" + key }, label, inp));
+  }
+  const statusSel = h("select", { id: "fd-status", class: "field", "aria-label": "Etapa" },
+    ["comercial", "clientes"].map((g) => h("optgroup", { label: g === "comercial" ? "Comercial" : "Clientes" }, STATUSES.filter((s) => s.group === g).map((s) => h("option", { value: s.id }, s.label)))));
+  statusSel.value = l.status || "novo";
+  if (!isNew) statusSel.addEventListener("change", () => { setStatus(l, statusSel.value); });
+
+  const head = h("div", { class: "drawer-h" },
+    h("div", { style: "display:grid;gap:6px;min-width:0" },
+      h("h2", { id: "drawer-title" }, isNew ? "Novo lead" : (l.empresa || "Sem nome")),
+      !isNew ? h("div", { style: "display:flex;gap:8px;align-items:center;flex-wrap:wrap" }, statusPill(l.status),
+        l.instagram ? h("a", { href: igUrl(l.instagram), target: "_blank", rel: "noopener", style: "font-size:13px" }, "@" + handle(l.instagram)) : null,
+        l.nota != null ? h("span", { class: "score num", "data-hi": l.nota >= 8 }, l.nota + "/10") : null) : null),
+    h("button", { class: "btn ghost sm", type: "button", "aria-label": "Fechar", onclick: closeDrawer }, "Fechar"));
+
+  const body = h("div", { class: "drawer-b" });
+  if (!isNew) {
+    body.append(h("section", { class: "dsec" }, h("h3", {}, "Etapa"), h("div", { style: "display:flex;gap:8px;align-items:center;flex-wrap:wrap" }, statusSel, dueChip(l))));
+    // Cadência
+    const s = steps();
+    const cs = h("div", { class: "cad-steps" });
+    s.forEach((p, i) => {
+      const done = i < (l.toque || 0);
+      const isNext = !done && i === (l.toque || 0) && ["novo", "abordado"].includes(l.status || "novo");
+      const when = done ? "enviado" : isNext ? (i === 0 ? "a enviar" : fmtDay(nextDate(l)) || "a enviar") : (l.abordadoEm ? fmtDay(addDays(l.abordadoEm, p.dia)) : "dia " + p.dia);
+      cs.append(h("div", { class: "cad-step", "data-state": done ? "done" : isNext ? "next" : "" }, h("b", { title: p.nome }, p.nome || "Toque " + (i + 1)), h("span", {}, when)));
+    });
+    const cadSec = h("section", { class: "dsec" }, h("h3", {}, "Cadência"), cs);
+    if (["novo", "abordado"].includes(l.status || "novo") && (l.toque || 0) < s.length) {
+      const msg = messageFor(l);
+      const ta = h("textarea", { class: "msg", id: "dmsg-" + l.id, "aria-label": "Mensagem do próximo toque" }); ta.value = msg.text;
+      ta.addEventListener("input", () => { drafts[l.id] = ta.value; });
+      cadSec.append(ta, h("div", { class: "task-actions" },
+        h("button", { class: "btn primary sm", type: "button", onclick: () => copyText(ta) }, "Copiar"),
+        h("button", { class: "btn sm", type: "button", onclick: () => { markSent(l, ta.value); renderDrawer(); } }, "Marquei " + (msg.passo ? msg.passo.nome.split("—")[0].trim() : "toque") + " como enviado"),
+        l.status === "abordado" ? h("button", { class: "btn ghost sm", type: "button", onclick: () => { setStatus(l, "respondeu"); renderDrawer(); } }, "Respondeu") : null));
+    }
+    body.append(cadSec);
+    // Financeiro
+    const fin = h("div", { class: "checks" });
+    const chk = (key, label, dateKey) => {
+      const c = h("input", { type: "checkbox", id: "fd-" + key }); c.checked = !!l[key];
+      c.addEventListener("change", () => {
+        const patch = { [key]: c.checked };
+        if (dateKey) patch[dateKey] = c.checked ? (l[dateKey] || today()) : "";
+        if (key === "manutencao" && c.checked && !l.manutencaoDesde) patch.manutencaoDesde = today();
+        patch.historico = withHist(l, histItem(label + (c.checked ? " marcado" : " desmarcado"), "financeiro"));
+        save(l.id, patch);
+      });
+      return h("label", { for: "fd-" + key }, c, label + (l[dateKey] && l[key] ? " (" + fmtDay(l[dateKey]) + ")" : ""));
+    };
+    fin.append(chk("entradaPaga", "Entrada paga", "entradaEm"), chk("finalPago", "Final pago", "finalEm"), chk("manutencao", "Tem manutenção", "manutencaoDesde"));
+    body.append(h("section", { class: "dsec" }, h("h3", {}, "Financeiro"),
+      h("div", { class: "muted" }, l.valor ? "Projeto de " + brl(l.valor) + " · entrada " + brl(l.valor / 2) + " · final " + brl(l.valor / 2) : "Preencha o valor fechado nos dados abaixo." + (l.rodadasUsadas != null ? "" : "")),
+      fin, l.rodadasUsadas != null ? h("div", { class: "faint" }, l.rodadasUsadas + " rodada(s) de ajuste usadas") : null));
+  }
+  body.append(h("section", { class: "dsec" }, h("h3", {}, "Dados"), grid));
+  if (!isNew) {
+    const hist = (Array.isArray(l.historico) ? l.historico : []).slice().reverse();
+    body.append(h("section", { class: "dsec" }, h("h3", {}, "Histórico"),
+      hist.length ? h("ul", { class: "history" }, hist.map((it) => h("li", {}, h("time", { datetime: it.em }, fmtDay(it.em)), h("span", {}, it.texto)))) : h("p", { class: "faint", style: "margin:0" }, "Sem movimentações registradas.")));
+  }
+
+  const collect = () => {
+    const out = {};
+    for (const [key, , type] of FIELDS) {
+      const raw = inputs[key].value;
+      out[key] = type === "number" ? (raw === "" ? null : Number(raw)) : raw.trim();
+    }
+    return out;
+  };
+  const del = h("button", { class: "btn danger", type: "button", onclick: async () => {
+    if (!del.dataset.confirm) { del.dataset.confirm = ""; del.textContent = "Confirmar exclusão"; setTimeout(() => { if (del.isConnected) { delete del.dataset.confirm; del.textContent = "Excluir"; } }, 4000); return; }
+    const id = l.id; closeDrawer(); leads = leads.filter((x) => x.id !== id); renderAll();
+    if (db) { try { await db.collection("leads").doc(id).delete(); toast("Lead excluído"); } catch (e) { toast("Não foi possível excluir."); } }
+  } }, "Excluir");
+  const saveBtn = h("button", { class: "btn primary", type: "button", onclick: async () => {
+    const data = collect();
+    if (!data.empresa) { toast("Preencha o nome da empresa."); inputs.empresa.focus(); return; }
+    if (isNew) {
+      const id = slug(data.instagram) || slug(data.empresa.replace(/\s+/g, ""));
+      if (!id) { toast("Preencha o Instagram para criar o lead."); return; }
+      if (leads.some((x) => x.id === id)) { toast("Já existe um lead com esse Instagram."); return; }
+      const doc = { ...Object.fromEntries(Object.entries(data).filter(([, v]) => v !== "" && v !== null)), instagram: handle(data.instagram), status: statusSel.value || "novo", toque: 0, criadoEm: new Date().toISOString(), atualizadoEm: new Date().toISOString(), datas: { [statusSel.value || "novo"]: today() }, historico: [histItem("Lead cadastrado no painel", "status")] };
+      if (!db) { toast("Banco indisponível."); return; }
+      try { await db.collection("leads").doc(id).set(doc); leads.push({ id, ...doc }); drawerId = id; renderAll(); renderDrawer(); toast("Lead criado"); } catch (e) { toast("Não foi possível criar o lead."); }
+      return;
+    }
+    const changed = {};
+    for (const [k, v] of Object.entries(data)) if ((l[k] ?? (typeof v === "number" ? null : "")) !== v) changed[k] = v;
+    delete changed.instagram;
+    if (!Object.keys(changed).length) { toast("Nada mudou."); return; }
+    if ("mensagemProxima" in changed) delete drafts[l.id];
+    changed.historico = withHist(l, histItem("Dados atualizados: " + Object.keys(changed).join(", "), "nota"));
+    await save(l.id, changed);
+    renderDrawer();
+  } }, isNew ? "Criar lead" : "Salvar dados");
+  if (isNew) body.prepend(h("section", { class: "dsec" }, h("h3", {}, "Etapa inicial"), statusSel));
+  d.append(head, body, h("div", { class: "drawer-f" }, isNew ? h("span") : del, h("div", { style: "display:flex;gap:8px" }, h("button", { class: "btn ghost", type: "button", onclick: closeDrawer }, "Cancelar"), saveBtn)));
+}
+$("scrim").addEventListener("click", closeDrawer);
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && drawerId) closeDrawer(); });
+
+/* ================= Navegação ================= */
+function setView(v) {
+  view = v;
+  for (const t of document.querySelectorAll(".tab")) t.setAttribute("aria-selected", String(t.dataset.view === v));
+  for (const s of document.querySelectorAll(".view")) s.hidden = s.id !== "view-" + v;
+  if (v !== "cadencia") cadDraft = null;
+  renderView();
+  try { history.replaceState(null, "", "#" + v); } catch (e) {}
+}
+function renderView() {
+  ({ painel: renderPainel, hoje: renderHoje, kanban: renderKanban, leads: renderLeads, cadencia: renderCadencia })[view]();
+}
+function renderAll() {
+  const n = todayTasks().count; const b = $("badge-hoje"); b.textContent = String(n); if (n) delete b.dataset.zero; else b.dataset.zero = "";
+  if (drag) return; // não redesenha durante o arraste
+  const active = document.activeElement;
+  const typing = active && ["TEXTAREA", "INPUT", "SELECT"].includes(active.tagName) && $("view-" + view).contains(active);
+  if (!typing) renderView();
+}
+document.querySelectorAll(".tab").forEach((t) => t.addEventListener("click", () => setView(t.dataset.view)));
+$("btn-new").addEventListener("click", () => openDrawer("__new"));
+const initial = (location.hash || "").slice(1);
+setView(["painel", "hoje", "kanban", "leads", "cadencia"].includes(initial) ? initial : "painel");
+
+/* ================= Modo app próprio (Convex) =================
+   Quando a página roda fora do claude.ai (crm/dist na Vercel), window.CRM_CONVEX vem de config.js.
+   O adaptador abaixo imita a API do banco do artifact (collection/doc/set/update/delete/onSnapshot).
+   Toda leitura e gravação leva a senha do CRM, conferida no servidor (convex/docs.ts). */
+const CRM_KEY_STORE = "crm-senha";
+const readKey = () => { try { return localStorage.getItem(CRM_KEY_STORE) || ""; } catch (e) { return ""; } };
+const writeKey = (k) => { try { k ? localStorage.setItem(CRM_KEY_STORE, k) : localStorage.removeItem(CRM_KEY_STORE); } catch (e) {} };
+const isAuthError = (e) => /nao_autorizado/.test(String((e && (e.data || e.message)) || ""));
+function logoutAndReload() { writeKey(""); location.reload(); }
+function convexDb(client, key) {
+  const fail = (e) => {
+    if (isAuthError(e)) logoutAndReload();
+    throw { code: /documento_nao_existe/.test(String(e && (e.data || e.message))) ? "invalid_argument" : "unavailable", message: String(e && e.message) };
+  };
+  return {
+    collection(c) {
+      return {
+        doc(id) {
+          return {
+            async set(data) { try { await client.mutation("docs:set", { key, collection: c, id, data }); } catch (e) { fail(e); } },
+            async update(patch) { try { await client.mutation("docs:update", { key, collection: c, id, patch }); } catch (e) { fail(e); } },
+            async delete() { try { await client.mutation("docs:remove", { key, collection: c, id }); } catch (e) { fail(e); } },
+          };
+        },
+        onSnapshot(next, onErr) {
+          const sub = client.onUpdate("docs:list", { key, collection: c }, (rows) => {
+            next({ docs: rows.map((r) => ({ id: r.id, data: () => r.data })), size: rows.length, empty: !rows.length });
+          }, (e) => {
+            if (isAuthError(e)) return logoutAndReload();
+            if (onErr) onErr({ code: "unavailable", message: String(e && e.message) });
+          });
+          return () => sub.unsubscribe ? sub.unsubscribe() : sub();
+        },
+      };
+    },
+  };
+}
+function loginScreen(client) {
+  return new Promise((resolve) => {
+    const pass = h("input", { id: "login-pass", type: "password", autocomplete: "current-password", required: true });
+    const err = h("p", { class: "missing", hidden: true, style: "margin:0" });
+    const btn = h("button", { class: "btn primary", type: "submit" }, "Entrar");
+    const overlay = h("div", { style: "position:fixed;inset:0;z-index:100;background:var(--bg);display:grid;place-items:center;padding:16px" },
+      h("form", { class: "card", style: "width:min(380px,100%);padding:24px;display:grid;gap:14px", onsubmit: async (e) => {
+          e.preventDefault(); btn.disabled = true; err.hidden = true;
+          const key = pass.value.trim();
+          try {
+            await client.query("docs:check", { key });
+          } catch (ex) {
+            btn.disabled = false;
+            err.textContent = isAuthError(ex) ? "Senha incorreta." : "Sem conexão com o banco. Tente de novo.";
+            err.hidden = false; return;
+          }
+          writeKey(key); overlay.remove(); resolve(key);
+        } },
+        h("div", { class: "brand" }, h("span", { class: "brand-mark", "aria-hidden": "true" }, "ES"), h("span", {}, "CRM do Estúdio", h("small", {}, "Entre para ver seus leads"))),
+        h("label", { class: "f", for: "login-pass" }, "Senha do CRM", pass),
+        err, btn));
+    document.body.append(overlay);
+    setTimeout(() => pass.focus(), 30);
+  });
+}
+async function connectConvex() {
+  const client = new window.convex.ConvexClient(window.CRM_CONVEX.url);
+  let key = readKey();
+  if (key) {
+    try { await client.query("docs:check", { key }); } catch (e) { if (isAuthError(e)) { writeKey(""); key = ""; } }
+  }
+  if (!key) key = await loginScreen(client);
+  const out = h("button", { class: "btn ghost sm", type: "button", onclick: logoutAndReload }, "Sair");
+  document.querySelector(".top-in").append(out);
+  return convexDb(client, key);
+}
+
+/* ================= Conexão com o banco ================= */
+(async () => {
+  if (window.CRM_CONVEX && window.CRM_CONVEX.url && window.convex) {
+    try { db = await connectConvex(); } catch (e) { db = null; }
+  } else {
+    db = window.claude ? await window.claude.use("db") : null;
+  }
+  if (!db) { $("db-banner").hidden = false; $("sync").textContent = "Sem banco"; loaded.leads = true; renderAll(); return; }
+  db.collection("leads").onSnapshot((snap) => {
+    leads = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+    loaded.leads = true;
+    $("sync").textContent = leads.length + (leads.length === 1 ? " registro" : " registros") + " · ao vivo";
+    $("sync").dataset.live = "";
+    renderAll();
+    if (drawerId && drawerId !== "__new" && !$("drawer").contains(document.activeElement)) renderDrawer();
+  }, (e) => { $("sync").textContent = "Conexão perdida (" + e.code + ")"; delete $("sync").dataset.live; });
+  db.collection("config").onSnapshot((snap) => {
+    for (const d of snap.docs) {
+      if (d.id === "cadencia") cadencia = d.data();
+      if (d.id === "metas") metas = d.data();
+    }
+    loaded.config = true;
+    if (view !== "cadencia") renderAll();
+  }, () => {});
+})();
+</script>

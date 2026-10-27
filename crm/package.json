@@ -1,0 +1,11 @@
+{
+  "name": "crm-estudio",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "convex:deploy": "convex deploy"
+  },
+  "devDependencies": {
+    "convex": "^1.27.0"
+  }
+}

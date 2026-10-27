@@ -1,0 +1,7 @@
+node_modules
+.env*
+!.env.example
+crm/dist
+crm/seed.json
+.vercel
+.DS_Store
